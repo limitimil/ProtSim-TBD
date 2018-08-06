@@ -39,6 +39,13 @@ def run_tm_align_parse_output(template, target, target_chain="_"):
 
         parsed_line = dict(zip(keys, values))
         return parsed_line
+def make_alignment_report(fn):
+    df = pd.read_csv(fn)
+    return fn, {
+        'tm1': df['tm1'][0],
+        'tm2': df['tm2'][0],
+        'rmsd': df['rmsd'][0],
+    }
 class TemplateBasedDock(IP.InterPred):
     PDBrepo = '/home/limin/limin/InterPred/interpred/homology_models'
     TEMPLATErepo = '/home/limin/limin/InterPred/task0110/out'
@@ -73,7 +80,9 @@ class TemplateBasedDock(IP.InterPred):
         #empty
         outfiles = make_coarse_models.main((sa1, pdb1, '_', sa2, pdb2, '_'))
         self._env_restore()
-        return sa1, sa2, outfiles
+        return (make_alignment_report(sa1),
+            make_alignment_report(sa2), 
+            outfiles)
     def grabPDBpath(self,target):
         files = os.listdir(self.PDBrepo)
         files = filter(
@@ -127,14 +136,14 @@ class TemplateBasedDock(IP.InterPred):
 if __name__ == '__main__':
     import pprint,sys,json
     so = TemplateBasedDock()
-#    res = so.make_model(
-#        pdb1 = '/home/limin/limin/InterPred/interpred/homology_models/CSF1R_HUMAN_seg0_0.pdb',
-#        pdb2 = '/home/limin/limin/InterPred/interpred/homology_models/CSF1_HUMAN_seg0_0.pdb',
-#        pdbt = [
-#            '/home/limin/limin/InterPred/task0110/out/4WRL_20180104174819744000.pdb',
-#            'A','B']
-#    )
-#    pp = pprint.PrettyPrinter(indent=4)
-#    pp.pprint(res)
-    ret = so.run(sys.argv[1])
-    json.dump(ret, open('log.json','w'), indent=4)
+    res = so.make_model(
+        pdb1 = '/home/limin/limin/InterPred/interpred/homology_models/CSF1R_HUMAN_seg0_0.pdb',
+        pdb2 = '/home/limin/limin/InterPred/interpred/homology_models/CSF1_HUMAN_seg0_0.pdb',
+        pdbt = [
+            '/home/limin/limin/InterPred/task0110/out/4WRL_20180104174819744000.pdb',
+            'A','B']
+    )
+    pp = pprint.PrettyPrinter(indent=4)
+    pp.pprint(res)
+#    ret = so.run(sys.argv[1])
+#    json.dump(ret, open('log.json','w'), indent=4)
